@@ -1,0 +1,36 @@
+# Fixed, bounded hidden-information pilot; reads GEMINI_API_KEY locally.
+condition: BATTLESHIP-NOTES
+tools: true
+memory: false
+skills: false
+fixed_agents: false
+dynamic_agents: false
+temporary_agents: false
+self_refinement: true
+verification_gate: true
+basic_verification: false
+recursive_context: true
+context_mode: recursive
+versioning: true
+rollback: true
+epsilon: 0.00001
+limits:
+  max_depth: 3
+  max_model_calls: 5
+  max_subagents: 12
+  max_tokens: 80000
+  max_execution_time: 900
+  max_tool_calls: 5
+  max_context_chars: 8000
+  max_output_chars: 12000
+model:
+  backend: openai
+  model: gemini-3.1-flash-lite
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai
+  api_key_env: GEMINI_API_KEY
+  temperature: 0
+  max_output_tokens: 1024
+  request_timeout: 45
+  reasoning_effort: minimal
+  input_cost_per_million: 0
+  output_cost_per_million: 0

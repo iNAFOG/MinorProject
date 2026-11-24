@@ -1,0 +1,286 @@
+
+## Index/Document.iwa
+en_IN
+5026.60
+gregorian
+latn
+January
+February
+March
+April
+June
+July
+August
+September
+October
+November
+December
+Sunday
+Monday
+Tuesday
+Wednesday
+Thursday
+Friday
+Saturday
+1st quarter
+2nd quarter
+3rd quarter
+4th quarter
+Before Christ
+Anno Domini
+dd/MM/yy
+d MMM y
+d MMMM y
+EEEE, d MMMM y
+h:mm a
+h:mm:ss a
+h:mm:ss a z
+h:mm:ss a zzzz
+#,##,##0.###
+#,##,##0%
+¤#,##,##0.00
+FCFA
+F CFA
+CFPF
+en-GB
+na-letter
+Custom Format 1
+Office Theme
+GURU GOBIND SINGH INDRAPRASTHA UNIVERSITY
+University School of Automation and Robotics (USAR)
+￼
+Adaptive Self-Improving Agent Harnesses for Long-Horizon Autonomous Reasoning and Tool Use
+Minor Project Synopsis
+Submitted By:
+￼
+Mentor : Dr. Ashish Joshi Assistant Professor USAR
+Introduction
+
+Large Language Models are now used for more than writing text. They can plan, run code, search, call tools and work with files. Still, the model alone is not an autonomous system. It needs an outer setup that decides what it can use and what it should remember.
+That outer setup is called an agent harness in this project. It includes tools, memory, execution, sub-agents and feedback. ReAct [1] is a simple example of this shift. The model reasons, takes an action, sees the result, then continues. Toolformer [2] also showed that tools can become part of model behaviour instead of being handled only by a human user.
+Long tasks create another problem. A coding job or research task can produce many files, notes and failed attempts. Keeping everything inside one prompt is costly and often confusing. So the main issue is not only context-window size. It is choosing what should be visible now and what can stay outside.
+Memory systems such as MemGPT [3] separate active context from stored information. Voyager [4] goes further by saving useful behaviours as skills. This gives one simple idea for this work: a useful agent should not restart from zero every time.
+There is still a gap. In many systems the model can act in a flexible way, but the harness around it stays fixed. Tools, roles and memory rules are decided before the run. Continual Harness [8] and Prime Agent [10] question that fixed design. They allow parts of the harness itself to change from experience.
+
+Static agent:  Model + fixed tools + fixed prompt + fixed memory  ->  actions
+Adaptive agent:  Model + H + environment  ->  actions + change in H
+
+For this study, H = (rho, G, K, M). In simple terms, rho is persistent strategy, G is the sub-agent registry, K is the skill store, and M is long-term memory. The foundation-model weights stay fixed. Only the outside harness is allowed to change in controlled ways.
+The project is not about unlimited self-modification. A wrong memory can stay wrong for many tasks. A bad skill can also be reused. Because of this, every persistent change needs some evidence, version history and a way to roll it back.
+
+2. Literature Survey
+
+The related work is easier to understand by grouping it around a few basic needs: acting, tools, memory, reuse, specialization and long-context handling.
+ReAct [1] gives the basic reason-action-observation loop. Toolformer [2] focuses on calling outside tools. Reflexion [5] stores lessons from failed attempts, while LATS [6] adds search over different reasoning paths. These methods improve how an agent reacts during a task, but they do not by themselves give a full persistent self-improving system.
+MemGPT [3] treats memory as separate levels, so the model does not have to see every stored item at the same time. Voyager [4] stores successful behaviour as reusable code-like skills. AutoGen [7] shows how several model instances can work in different roles. The weak point is that these roles are usually decided in advance.
+SWE-agent [11] is important for a different reason. It shows that changing the interface around the same model can change software-engineering performance. That supports the basic claim of this project: harness design should be measured separately from model quality.
+Recursive Language Models (RLMs) [9] treat very large context as something a program can inspect in parts. Instead of placing all information in one prompt, the system can select a section, send it to another model call, then combine the result. This can be useful for repositories, long documents and old task histories.
+Continual Harness [8] makes prompt notes, agents, skills and memory editable over time. Prime Agent [10] combines that idea with recursive context handling and a persistent programmatic runtime. It is close to the direction of this project, but it also makes ablation important. A large system can look better simply because it spends more compute.
+
+
+
+
+
+
+
+
+
+
+
+
+Short comparison of the main systems
+
+￼
+Research gap. Across the literature, the same issues keep coming back. Context grows too large. Memory is often fixed. Agent roles are set before the task. Reflection stays as text instead of becoming a reusable procedure. Most importantly, persistent changes can be wrong. The project therefore asks how much extra capability can come from an adaptive harness around a fixed model, and how much verification is needed before those changes should stay.
+
+3. Problem Statement
+
+The aim is to build and study an LLM agent that can finish long, multi-step tasks while managing its own outside state. The environment can be written as E = (S, A, P, R), with state, action, transition and task feedback. The agent sees an observation rather than the full state.
+a ~ pi_theta(o, C, H),      s_(t+1) ~ P(s_(t+1) | s_t, a_t)
+Here theta stays fixed. C is the information selected for the present step. H is the persistent harness state. After enough evidence is collected, a refinement step can suggest a small update to H.
+H_(t+1) = R_phi(H_t, trajectory, verification)
+Raw task success is not enough as the only score. An agent may get better results only by making many more model calls, by memorizing repeated benchmark tasks, or by storing shortcuts that fail later. So the study will look at success, cost, failures and transfer together.
+
+Research questions
+RQ1 - Does recursive context handling work better than keeping full context or only using summaries?
+RQ2 - Does structured long-term memory help on repeated and long tasks?
+RQ3 - Can repeated successful steps be turned into executable skills that save later effort?
+RQ4 - Can dynamically created specialist agents beat a fixed set of roles under similar compute?
+RQ5 - Can the harness improve its prompt notes, memory, skills and agent definitions without model fine-tuning?
+RQ6 - Does verification before saving a harness change reduce harmful updates?
+RQ7 - Do learned harness changes help on related held-out tasks, not just the tasks already seen?
+RQ8 - When do extra recursive calls and extra agents stop being worth their cost?
+RQ9 - How often do bad persistent memories or skills build up, and can provenance and rollback limit the damage?
+The study will keep the foundation model the same inside each comparison. That matters because otherwise it becomes hard to tell whether a gain came from a better harness or simply from a stronger model.
+
+
+
+
+
+
+3.1 Proposed Adaptive Agent Architecture
+
+The design is split into separate parts so they can be turned on and off during experiments. The goal is not to build the biggest possible system first.
+Layer A - Foundation model. One instruction or reasoning model provides the main decisions. Its weights are not changed during harness experiments.
+Layer B - Programmatic runtime. A persistent Python/IPython-like environment keeps structured objects and exposes functions for search, reading, execution, memory and agent calls.
+Layer C - Recursive context engine. Large files, repositories and old trajectories stay outside the prompt. The system inspects only useful parts and can delegate pieces to child calls.
+Layer D - Persistent state. Memory, skills, prompt notes and agent definitions are stored with source and history information.
+Layer E - Continual refiner. After repeated success or failure, a refiner proposes small create/update/delete changes instead of rewriting the whole system.
+Layer F - Verification and rollback. Persistent changes are versioned. A change can be rejected before use or reverted later if it causes worse results.
+
+￼
+Figure 1. Proposed verification-gated adaptive agent harness. The foundation model stays fixed while memory, skills, prompt notes and agent definitions may change through a controlled refiner.
+Persistent entries will not be plain text only. A memory can store content, source, time, confidence and tags. A skill can keep its purpose, code, inputs, validation method and usage history. This makes later editing or deletion possible.
+Candidate task settings will mainly be: (1) software engineering, where tests and compilers give strong verification; (2) research and information synthesis, where source tracking matters; and (3) a small interactive or simulated environment if time and compute allow it.
+3.2 Experimental Design and Evaluation
+
+The experiment will move from a simple baseline to more adaptive versions. Each step adds one main capability. This is important because a final all-in-one system would not show which part actually helped.
+￼
+Main comparisons will include E3 versus E2 for recursive context, E5 versus E4 for dynamic roles, E6 versus E5 for skills, E7 versus E6 for harness refinement, and E8 versus E7 for the verification gate. The final system will also be tested after removing memory, skills, dynamic agents or verification one at a time.
+
+Measures
+
+Task Success Rate: completed tasks / total tasks.
+Verified Completion Rate: tasks passing an outside check / total tasks.
+Action Efficiency: successful tasks relative to environment actions.
+Token Efficiency: successful tasks relative to total model tokens.
+Recovery Rate: recoverable failures that the agent fixes.
+Human Intervention Rate: tasks needing manual help / total tasks.
+Skill Reuse Rate: later eligible tasks that successfully use a learned skill.
+Transfer Gain: performance with learned harness minus performance with initial harness.
+Cost-adjusted performance: verified success compared with inference and environment cost.
+False self-improvement is a main risk. Adaptation tasks and held-out evaluation tasks will be kept separate. Memory will keep provenance and, where useful, confidence. A repository-specific fact should stay local to that repository. A more general debugging rule should only become a reusable skill after it works across different tasks.
+
+4. Motivation
+
+A strong model can still be a weak agent. It may lose important information, use an awkward interface, repeat work or stop before checking the final result. SWE-agent [11] shows that interface design alone can change observed performance. That makes the harness worth studying on its own.
+Context is another reason. Long jobs can create more information than should be sent to the model every step. RLM-style processing [9] offers a different option: keep the large object outside, inspect pieces and make extra calls only when needed.
+The project also looks at cheaper forms of adaptation. A model does not need full fine-tuning just to remember a command, a project rule or a repeated workflow. Those things may fit better as memory, skills or specialist roles. The open question is whether this really transfers, or only adds complexity.
+Reliability matters more once changes persist. A temporary wrong answer is bad. A wrong memory that affects the next ten tasks is worse. That is why provenance, bounded edits, verification and rollback are part of the design from the start.
+
+
+
+5. Proposed Methodology
+
+Phase I - Baseline. Build one fixed model with a small tool set, execution loop, logging and task verification. No self-improvement.
+Phase II - Context and memory. Add external trajectory storage, structured memory and recursive context handling. Compare full context, summaries and recursive processing.
+Phase III - Skills and dynamic agents. Turn repeated successful procedures into candidate skills after validation. Keep specialist agents only when their repeated contribution is useful.
+Phase IV - Continual refinement. Let a refiner inspect trajectories and suggest small edits to memory, skills, prompt notes or agent definitions. Accepted changes are versioned.
+Phase V - Transfer test. Evaluate the learned harness on related held-out tasks and on changed repositories or sources. Negative transfer will also be recorded, not hidden.
+Each run will log model outputs, tool calls, environment observations, test results, time and token use. Multiple runs will be used where compute permits. The purpose is to compare mechanisms, not only to show one successful demo.
+
+6. Hardware / Software Requirements
+
+Hardware: a normal modern workstation or laptop, multi-core CPU, about 16 GB or more RAM, SSD storage, and an NVIDIA GPU with roughly 6-8 GB VRAM for small or quantized local models. Larger models can be used through APIs or cloud GPUs. Training a foundation model is outside the project scope.
+Software: Python, PyTorch or standard transformer inference libraries, a persistent Python/IPython runtime, Git, pytest, NumPy, Pandas and Matplotlib. SQLite/PostgreSQL or a vector store can be used for memory. Docker or another sandbox can be used for safer code execution.
+
+References
+
+[1] S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan and Y. Cao, “ReAct: Synergizing Reasoning and Acting in Language Models,” ICLR, 2023. arXiv:2210.03629.
+[2] T. Schick, J. Dwivedi-Yu, R. Dessi, R. Raileanu, M. Lomeli, L. Zettlemoyer, N. Cancedda and T. Scialom, “Toolformer: Language Models Can Teach Themselves to Use Tools,” NeurIPS, 2023. arXiv:2302.04761.
+[3] C. Packer, S. Wooders, K. Lin, V. Fang, S. G. Patil, I. Stoica and J. E. Gonzalez, “MemGPT: Towards LLMs as Operating Systems,” arXiv:2310.08560, 2023.
+[4] G. Wang, Y. Xie, Y. Jiang, A. Mandlekar, C. Xiao, Y. Zhu, L. Fan and A. Anandkumar, “Voyager: An Open-Ended Embodied Agent with Large Language Models,” TMLR, 2024. arXiv:2305.16291.
+[5] N. Shinn, F. Cassano, E. Berman, A. Gopinath, K. Narasimhan and S. Yao, “Reflexion: Language Agents with Verbal Reinforcement Learning,” NeurIPS, 2023. arXiv:2303.11366.
+[6] A. Zhou, K. Yan, M. Shlapentokh-Rothman, H. Wang and Y.-X. Wang, “Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models,” ICML, 2024.
+[7] Q. Wu et al., “AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation,” arXiv:2308.08155, 2023.
+[8] S. Karten, J. Zhang, T. Upaa Jr., R. Feng, W. Li, C. Shi, C. Jin and K. Vodrahalli, “Continual Harness: Online Adaptation for Self-Improving Foundation Agents,” arXiv:2605.09998, 2026.
+[9] A. L. Zhang, T. Kraska and O. Khattab, “Recursive Language Models,” arXiv:2512.24601, 2026.
+[10] S. Karten, A. L. Zhang, K. Thomas, S. Muller, E. Bakouch, D. Auras, M. Senghaas, F. Obeid, K. Dunas, J. Hagemann and S. Jaghouar, “Prime Agent: A Self-Improving RLM Harness,” arXiv:2608.23552, 2026.
+[11] J. Yang, C. E. Jimenez, A. Wettig, K. Lieret, S. Yao, K. Narasimhan and O. Press, “SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering,” arXiv:2405.15793, 2024.
+[12] X. Liu et al., “AgentBench: Evaluating LLMs as Agents,” ICLR, 2024. arXiv:2308.03688.
+[13] Prime Intellect Team, “Prime Agent: A self-improving RLM agent,” Prime Intellect Research Blog, 5 August 2026.
+Source note: the project keeps the original synopsis framing and citations. The architecture diagram is an explanatory project schematic based on the cited literature and the proposed experiment, not a reproduced figure from another paper.
+Chapter 1
+decimal
+Picture 1
+Picture 2
+Blank
+2026-09-14T11:01:15+0530
+
+## Index/ViewState.iwa
+TPMacInspectorSegmentIdentifierFormat
+
+## Index/CalculationEngine.iwa
+en_IN
+Asia/Kolkata
+949438B3-7890-4D57-BA08-217BDD66E988
+Table 1
+20200B0C-E0CE-4F48-94E6-5009DD6D0C58
+Table 2
+FEC862AD-6536-4BC7-B4EB-E783CFA0544A
+Table 3
+
+## Index/Tables/DataList-1732825-2.iwa
+Abhinav Pratap Singh B.Tech (AI-DS) B1 Enrollment No : 06319051923
+Prasoon Manglam B.Tech (AI-DS) B1 Enrollment No : 06319051923
+
+## Index/Tables/DataList-1732868-2.iwa
+System
+Main idea
+Useful point
+Main gap
+ReAct [1]
+Reason + act
+Good interaction loop
+No persistent harness change
+Toolformer [2]
+Tool use
+External computation
+Tools still designed outside
+MemGPT [3]
+Memory
+Separates stored and active context
+No skill or role learning
+Voyager [4]
+Skills
+Reuses successful procedures
+Mainly shown in an embodied setting
+Reflexion/LATS [5][6]
+Reflection/search
+Learns from failure and explores
+More calls and cost
+AutoGen [7]
+Multi-agent
+Role based work
+Roles are mostly fixed
+Continual Harness [8]
+Adaptive harness
+Edits memory, skills and roles
+Transfer and safety need study
+RLM [9]
+Recursive context
+Handles large external context
+Not a full persistent learner
+Prime Agent [10]
+Combined system
+Persistent RLM-style harness
+Needs component-level ablation
+SWE-agent [11]
+Agent interface
+Better repo interaction
+Mainly software tasks
+AgentBench [12]
+Evaluation
+Shows long-horizon failures
+Not a self-improvement method
+
+## Index/Tables/DataList-1732959-2.iwa
+Configuration
+Memory
+Agents
+Skills
+Refine
+Verify
+Direct LLM
+Tool agent
+Basic
+Memory agent
+Recursive context
+Temp.
+Fixed multi-agent
+Fixed
+Dynamic multi-agent
+Dynamic
+Skill learner
+Continual harness
+Verified harness

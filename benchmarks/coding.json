@@ -1,0 +1,294 @@
+{
+  "version": "coding-fixtures-v1",
+  "description": "Offline mechanism checks, not an LLM capability benchmark",
+  "tasks": [
+    {
+      "task_id": "adapt-sum",
+      "split": "adaptation",
+      "project": "alpha",
+      "goal": "Return the sum of values",
+      "function": "solve",
+      "family": "coding",
+      "environment": "coding",
+      "target": "solution.py",
+      "writable_paths": [
+        "solution.py"
+      ],
+      "files": {
+        "solution.py": "def solve(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "solution.py",
+          "function": "solve",
+          "cases": [
+            {
+              "args": [
+                [
+                  1,
+                  2,
+                  3
+                ]
+              ],
+              "expected": 6
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "adapt-count",
+      "split": "adaptation",
+      "project": "beta",
+      "goal": "Return the count of values",
+      "function": "count_values",
+      "family": "coding",
+      "environment": "coding",
+      "target": "solution.py",
+      "writable_paths": [
+        "solution.py"
+      ],
+      "files": {
+        "solution.py": "def count_values(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "solution.py",
+          "function": "count_values",
+          "cases": [
+            {
+              "args": [
+                [
+                  9,
+                  8,
+                  7,
+                  6
+                ]
+              ],
+              "expected": 4
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "adapt-max",
+      "split": "adaptation",
+      "project": "gamma",
+      "goal": "Return the maximum value, or zero for an empty list",
+      "function": "largest",
+      "family": "coding",
+      "environment": "coding",
+      "target": "solution.py",
+      "writable_paths": [
+        "solution.py"
+      ],
+      "files": {
+        "solution.py": "def largest(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "solution.py",
+          "function": "largest",
+          "cases": [
+            {
+              "args": [
+                [
+                  -5,
+                  7,
+                  2
+                ]
+              ],
+              "expected": 7
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "verify-sum",
+      "split": "verification",
+      "project": "regression-a",
+      "goal": "Compute the sum of all values",
+      "function": "total",
+      "family": "coding",
+      "environment": "coding",
+      "target": "src/total.py",
+      "writable_paths": [
+        "src/total.py"
+      ],
+      "files": {
+        "src/total.py": "def total(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "src/total.py",
+          "function": "total",
+          "cases": [
+            {
+              "args": [
+                [
+                  4,
+                  -2,
+                  9
+                ]
+              ],
+              "expected": 11
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "verify-count",
+      "split": "verification",
+      "project": "regression-b",
+      "goal": "Compute the count of input values",
+      "function": "length",
+      "family": "coding",
+      "environment": "coding",
+      "target": "src/count.py",
+      "writable_paths": [
+        "src/count.py"
+      ],
+      "files": {
+        "src/count.py": "def length(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "src/count.py",
+          "function": "length",
+          "cases": [
+            {
+              "args": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "expected": 2
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "held-sum",
+      "split": "held_out",
+      "project": "new-repository-a",
+      "goal": "Return the sum of values including negatives",
+      "function": "aggregate",
+      "family": "coding",
+      "environment": "coding",
+      "target": "lib/aggregate.py",
+      "writable_paths": [
+        "lib/aggregate.py"
+      ],
+      "files": {
+        "lib/aggregate.py": "def aggregate(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "lib/aggregate.py",
+          "function": "aggregate",
+          "cases": [
+            {
+              "args": [
+                [
+                  10,
+                  -3,
+                  -4,
+                  2
+                ]
+              ],
+              "expected": 5
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "held-max",
+      "split": "held_out",
+      "project": "new-repository-b",
+      "goal": "Return the maximum value with an empty-list default of zero",
+      "function": "highest",
+      "family": "coding",
+      "environment": "coding",
+      "target": "lib/highest.py",
+      "writable_paths": [
+        "lib/highest.py"
+      ],
+      "files": {
+        "lib/highest.py": "def highest(values):\n    return -999\n"
+      },
+      "checks": [
+        {
+          "kind": "function",
+          "path": "lib/highest.py",
+          "function": "highest",
+          "cases": [
+            {
+              "args": [
+                [
+                  -8,
+                  -3,
+                  -12
+                ]
+              ],
+              "expected": -3
+            },
+            {
+              "args": [
+                []
+              ],
+              "expected": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

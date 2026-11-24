@@ -1,0 +1,41 @@
+{
+  "task_id": "adapt-sum",
+  "split": "adaptation",
+  "project": "alpha",
+  "goal": "Return the sum of values",
+  "function": "solve",
+  "family": "coding",
+  "environment": "coding",
+  "target": "solution.py",
+  "writable_paths": [
+    "solution.py"
+  ],
+  "files": {
+    "solution.py": "def solve(values):\n    return -999\n"
+  },
+  "checks": [
+    {
+      "kind": "function",
+      "path": "solution.py",
+      "function": "solve",
+      "cases": [
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": 6
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": 0
+        }
+      ]
+    }
+  ]
+}

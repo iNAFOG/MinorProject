@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adaptive-agent-harness"
+version = "0.1.0"
+description = "Fixed-model, verification-gated external harness adaptation research prototype"
+requires-python = ">=3.12"
+dependencies = ["PyYAML>=6.0,<7"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+plots = ["matplotlib>=3.8,<4"]
+
+[project.scripts]
+agent-harness = "agent_harness.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["agent_harness*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+

@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+runs/
+.harness/
+
+# Report, presentation and synopsis documents (kept locally, not in the repo)
+reports/
+*.pages
+*.docx
+*.pptx
+*.pdf
+scripts/build_final_report.js
+scripts/build_final_presentation.js
+scripts/build_final_figures.py
+scripts/build_progress_report.py
+scripts/office_export.ps1
+node_modules/

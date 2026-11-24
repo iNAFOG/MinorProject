@@ -1,0 +1,29 @@
+# Handwritten plumbing controller. This is NOT an LLM experiment.
+condition: GAME-NOTES
+tools: true
+memory: false
+skills: false
+fixed_agents: false
+dynamic_agents: false
+temporary_agents: false
+self_refinement: true
+verification_gate: true
+basic_verification: false
+recursive_context: true
+context_mode: recursive
+versioning: true
+rollback: true
+epsilon: 0.00001
+limits:
+  max_depth: 3
+  max_model_calls: 64
+  max_subagents: 12
+  max_tokens: 80000
+  max_execution_time: 900
+  max_tool_calls: 64
+  max_context_chars: 8000
+  max_output_chars: 12000
+model:
+  backend: game_smoke
+  model: game-smoke-v1
+  max_output_tokens: 1024
