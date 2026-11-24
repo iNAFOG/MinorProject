@@ -193,7 +193,7 @@ python -m agent_harness evaluate --state runs/demo/state.db --output runs/held-o
 
 With `--conditions`/`--seeds`, the top-level `comparison.csv` has one row per run.
 Its `held_out_*` columns give the paired before/after test comparison. Its other
-metric columns pool every episode of the learned run, adaptation included. Each
+metric columns pool every episode of the learned run , adaptation included. Each
 `eN-seedS/comparison.csv` splits the four phases.
 
 Other ablations: `--disable-memory`, `--disable-dynamic-agents`,
